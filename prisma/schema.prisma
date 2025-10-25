@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  rankings  UserRanking[]
+}
+
+model Week {
+  id        String   @id @default(cuid())
+  weekKey   String   @unique // e.g. 2025-10-21 (Tuesday date in NY)
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime @default(now())
+  rankings  UserRanking[]
+}
+
+model Team {
+  id      Int     @id
+  name    String  @unique
+  abbr    String  @unique
+  logoUrl String?
+}
+
+model UserRanking {
+  id        String   @id @default(cuid())
+  userId    String
+  weekId    String
+  // Ordered list of team IDs (1..32) as a JSON array
+  ranking   Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  week Week @relation(fields: [weekId], references: [id])
+
+  @@unique([userId, weekId])
+}
